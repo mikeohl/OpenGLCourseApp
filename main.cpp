@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+
 #include <stdio.h>
 #include <string.h>
 #include <cmath>
@@ -12,45 +14,56 @@
 
 // Window dimensions
 const GLint WIDTH = 800, HEIGHT = 600;
+const float toRadians = M_PI / 180.0f;
 
 GLuint VAO, VBO, shader, uniformModel;
 
+// translation movement
 bool direction		= true;
-float triOffset		= 0.0F;
-float triMaxOffset	= 0.7F;
-float triIncrement	= 0.0005F;
+float triOffset		= 0.0f;
+float triMaxOffset	= 0.7f;
+float triIncrement	= 0.0005f;
+
+// rotation movement
+float curAngle = 0.0f;
+
+// scale variation
+bool sizeDirection = true;
+float curSize	= 0.4f;
+float maxSize	= 0.8f;
+float minSize	= 0.1f;
 
 // Vertex Shader
-static const char* vShader = "                                \n\
-#version 330                                                  \n\
-                                                              \n\
-layout (location = 0) in vec3 pos;                            \n\
-                                                              \n\
-uniform mat4 model;                                           \n\
-                                                              \n\
-void main()                                                   \n\
-{                                                             \n\
-    gl_Position = model * vec4(0.4 * pos.x, 0.4 * pos.y, pos.z, 1.0); \n\
+static const char* vShader = "								\n\
+#version 330												\n\
+															\n\
+layout (location = 0) in vec3 pos;							\n\
+															\n\
+uniform mat4 model;											\n\
+															\n\
+void main()													\n\
+{															\n\
+    gl_Position = model * vec4(pos.x, pos.y, pos.z, 1.0);	\n\
 }";
 
 // Fragment Shader
-static const char* fShader = "                                \n\
-#version 330                                                  \n\
-                                                              \n\
-out vec4 color;                                               \n\
-                                                              \n\
-void main()                                                   \n\
-{                                                             \n\
-    color = vec4(1.0, 0.0, 0.0, 1.0);                         \n\
+static const char* fShader = "								\n\
+#version 330												\n\
+															\n\
+out vec4 color;												\n\
+															\n\
+void main()													\n\
+{															\n\
+    color = vec4(1.0, 0.0, 0.0, 1.0);						\n\
 }";
 
 void CreateTriangle()
 {
 	// Three triangle vertices
 	GLfloat vertices[] = {
-		-1.0F, -1.0F, 0.0F,
-		1.0F, -1.0F, 0.0F,
-		0.0F, 1.0F, 0.0F
+		-1.0f, -1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f
 	};
 
 	glGenVertexArrays(1, &VAO);
@@ -207,6 +220,26 @@ int main()
 			direction = !direction;
 		}
 
+		curAngle += 0.01f;
+		if (curAngle >= 360)
+		{
+			curAngle -= 360; // prevent overflow
+		}
+
+		if (sizeDirection)
+		{
+			curSize += 0.0001f;
+		}
+		else
+		{
+			curSize -= 0.0001f;
+		}
+
+		if (curSize >= maxSize || curSize <= minSize)
+		{
+			sizeDirection = !sizeDirection;
+		}
+
 		// Clear window
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -214,7 +247,10 @@ int main()
 		glUseProgram(shader);
 
 		glm::mat4 model(1.0F);
-		model = glm::translate(model, glm::vec3(triOffset, triOffset, 0.0f));
+		model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
+		model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::scale(model, glm::vec3(curSize, curSize, 1.0f));
+		
 		//printf("%f \n", model[0][0]);
 
 		//glUniform1f(uniformModel, triOffset);
