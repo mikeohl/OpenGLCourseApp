@@ -8,7 +8,7 @@
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtc\type_ptr.hpp>
-//#include <glm\mat4x4.hpp>
+// #include <glm/mat4x4.hpp>
 
 // Window dimensions
 const GLint WIDTH = 800, HEIGHT = 600;
@@ -213,9 +213,11 @@ int main()
 
 		glUseProgram(shader);
 
-		glm::mat4 model;
-		model = glm::translate(model, glm::vec3(triOffset, 0.0F, 0.0F));
+		glm::mat4 model(1.0F);
+		model = glm::translate(model, glm::vec3(triOffset, triOffset, 0.0f));
+		//printf("%f \n", model[0][0]);
 
+		//glUniform1f(uniformModel, triOffset);
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 
 		glBindVertexArray(VAO);
