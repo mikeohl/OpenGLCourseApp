@@ -27,12 +27,17 @@ void Mesh::CreateMesh(GLfloat *vertices,
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * numOfVertices, vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertices[0]) * 5, 0);
+	// Attribute 0 = vertex coordinates
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertices[0]) * 8, 0);
 	glEnableVertexAttribArray(0);
 
-	// Attribute 1 = texture coordinate
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertices[0]) * 5, (void*)(sizeof(vertices[0]) * 3));
+	// Attribute 1 = texture coordinates
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertices[0]) * 8, (void*)(sizeof(vertices[0]) * 3));
 	glEnableVertexAttribArray(1);
+
+	// Attribute 2 = normal coordinates
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vertices[0]) * 8, (void*)(sizeof(vertices[0]) * 5));
+	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind VBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind IBO
