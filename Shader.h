@@ -7,6 +7,11 @@
 
 #include <GL\glew.h>
 
+#include "CommonValues.h"
+
+#include "DirectionalLight.h"
+#include "PointLight.h"
+
 class Shader
 {
 public:
@@ -17,10 +22,13 @@ public:
 
 	std::string ReadFile(const char* fileLocation);
 
+	// Coordinates
 	GLuint GetProjectionLocation();
 	GLuint GetModelLocation();
 	GLuint GetViewLocation();
 	GLuint GetEyePositionLocation();
+
+	// Properties
 	GLuint GetAmbientIntensityLocation();
 	GLuint GetAmbientColorLocation();
 	GLuint GetDiffuseIntensityLocation();
@@ -28,16 +36,40 @@ public:
 	GLuint GetSpecularIntensityLocation();
 	GLuint GetSpecularPowerLocation();
 
+	void SetDirectionalLight(DirectionalLight * dLight);
+	void SetPointLights(PointLight * pLight, unsigned int lightCount);
+
 	void UseShader();
 	void ClearShader();
 
 	~Shader();
 
 private:
+	int pointLightCount;
+
 	GLuint shaderID, uniformProjection, uniformModel, uniformView, uniformEyePosition,
-		   uniformAmbientIntensity, uniformAmbientColor, 
-		   uniformDiffuseIntensity, uniformDirection,
-	       uniformSpecularIntensity, uniformSpecularPower;
+		   uniformSpecularIntensity, uniformSpecularPower;
+
+	struct {
+		GLuint uniformColor;
+		GLuint uniformAmbientIntensity;
+		GLuint uniformDiffuseIntensity;
+
+		GLuint uniformDirection;
+	} uniformDirectionalLight;
+
+	GLuint uniformPointLightCount;
+
+	struct {
+		GLuint uniformColor;
+		GLuint uniformAmbientIntensity;
+		GLuint uniformDiffuseIntensity;
+
+		GLuint uniformPosition;
+		GLuint uniformConstant;
+		GLuint uniformLinear;
+		GLuint uniformExponent;
+	} uniformPointLight[MAX_POINT_LIGHTS];
 
 	void CompileShader(const char* vertexCode, const char* fragmentCode);
 	void AddShader(GLuint theProgram, const char* shaderCode, GLenum shaderType);
