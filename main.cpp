@@ -27,6 +27,7 @@
 #include "PointLight.h"
 #include "SpotLight.h"
 #include "Material.h"
+#include "Model.h"
 
 const float toRadians = M_PI / 180.0f;
 
@@ -41,6 +42,9 @@ Texture plainTexture;
 
 Material shinyMaterial;
 Material dullMaterial;
+
+Model xwing;
+Model blackhawk;
 
 DirectionalLight mainLight;
 PointLight pointLights[MAX_POINT_LIGHTS];
@@ -159,6 +163,12 @@ int main()
 	shinyMaterial = Material(4.0f, 256);
 	dullMaterial = Material(0.3f, 4);
 
+	xwing = Model();
+	xwing.LoadModel("Models/x-wing.obj");
+
+	blackhawk = Model();
+	blackhawk.LoadModel("Models/uh60.obj");
+
 	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f, 
 		                         0.2, 0.3f,
 		                         2.0f, -1.0f, -2.0f);
@@ -169,13 +179,13 @@ int main()
 		                        0.1f, 0.1f,
 		                       -4.0f, 2.0f, 0.0f,
 		                        0.3f, 0.2f, 0.1f);
-	//pointLightCount++;
+	pointLightCount++;
 
 	pointLights[1] = PointLight(0.0f, 1.0f, 0.0f,
 		                        0.1f, 0.1f,
 		                        4.0f, 2.0f, 0.0f,
 		                        0.3f, 0.2f, 0.1f);
-	//pointLightCount++;
+	pointLightCount++;
 
 	unsigned int spotLightCount = 0;
 
@@ -252,6 +262,7 @@ int main()
 		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformSpecularPower);
 		meshList[0]->RenderMesh();
 
+		// Render bottom pyramid
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 2.0f, -2.5f));
 		//model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
@@ -261,14 +272,33 @@ int main()
 		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformSpecularPower);
 		meshList[1]->RenderMesh();
 
+		// Render top pyramid
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, -2.0f, 0.0f));
-		//model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 
 		dirtTexture.UseTexture();
 		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformSpecularPower);
 		meshList[2]->RenderMesh();
+
+		// render xwing model
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(-6.0f, 0.0f, 10.0f));
+		model = glm::scale(model, glm::vec3(0.006f, 0.006f, 0.006f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+
+		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformSpecularPower);
+		xwing.RenderModel();
+
+		// render blackhawk model
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(-3.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));
+		model = glm::rotate(model, -90.0f * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+
+		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformSpecularPower);
+		blackhawk.RenderModel();
 
 		glUseProgram(0); //Undersigning the shader
 
