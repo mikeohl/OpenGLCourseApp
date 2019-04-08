@@ -7,14 +7,20 @@ out vec4 vertColor;
 out vec2 TexCoord;
 out vec3 Normal;
 out vec3 FragPos;
+out vec4 DirectionalLightSpacePos;
 
 uniform mat4 model;
 uniform mat4 projection;
 uniform mat4 view;
+uniform mat4 directionalLightTransform;
 
 void main()
 {
     gl_Position = projection * view * model * vec4(pos, 1.0);
+
+	// Get the position of the fragment from the perspective of the light
+	DirectionalLightSpacePos = directionalLightTransform * model * vec4(pos, 1.0);
+
     vertColor = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);
 
     TexCoord = tex;

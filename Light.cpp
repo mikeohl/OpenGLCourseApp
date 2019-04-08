@@ -12,7 +12,9 @@ Light::Light()
 
 
 // TODO: Clamp red, green, blue values?
-Light::Light(GLfloat red, GLfloat green, GLfloat blue, GLfloat aIntensity, GLfloat dIntensity)
+Light::Light(GLfloat shadowWidth, GLfloat shadowHeight, 
+	         GLfloat red, GLfloat green, GLfloat blue, 
+	         GLfloat aIntensity, GLfloat dIntensity)
 {
 	// Ambient
 	color = glm::vec3(red, green, blue);
@@ -20,6 +22,10 @@ Light::Light(GLfloat red, GLfloat green, GLfloat blue, GLfloat aIntensity, GLflo
 
 	// Diffuse
 	diffuseIntensity = dIntensity;
+
+	// ShadowMap
+	shadowMap = new ShadowMap();
+	shadowMap->Init(shadowWidth, shadowHeight);
 }
 
 
