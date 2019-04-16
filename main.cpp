@@ -31,13 +31,16 @@
 
 const float toRadians = M_PI / 180.0f;
 
-GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
-       uniformSpecularIntensity = 0, uniformSpecularPower = 0;
+GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0, 
+       uniformSpecularIntensity = 0, uniformSpecularPower = 0,
+       uniformDirectionalLightTransform = 0, uniformOmniLightPos = 0, uniformFarPlane = 0;
 
 GLWindow mainWindow;
 std::vector<Mesh*> meshList;
+
 std::vector<Shader> shaderList;
 Shader directionalShadowShader; // Unique and separate from shaderList
+Shader omniShadowShader;
 
 Camera camera;
 
@@ -152,8 +155,8 @@ void CreateShaders()
 	shader1->CreateFromFiles(vShader, fShader);
 	shaderList.push_back(*shader1);
 
-	directionalShadowShader = Shader();
 	directionalShadowShader.CreateFromFiles("shaders/directional_shadow_map.vert", "shaders/directional_shadow_map.frag");
+	omniShadowShader.CreateFromFiles("shaders/omni_shadow_map.vert", "shaders/omni_shadow_map.geom", "shaders/omni_shadow_map.frag");
 }
 
 void RenderScene()
@@ -232,6 +235,30 @@ void DirectionalShadowMapPass(DirectionalLight* light)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void OmniShadowMapPass(PointLight* light)
+{
+	omniShadowShader.UseShader();
+
+	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
+
+	light->GetShadowMap()->Write();
+	glClear(GL_DEPTH_BUFFER_BIT); // Start out with clean slate for our shadowmap
+
+	uniformModel = omniShadowShader.GetModelLocation();
+	uniformOmniLightPos = omniShadowShader.GetOmniLightPosLocation();
+	uniformFarPlane = omniShadowShader.GetFarPlaneLocation();
+
+	glUniform3f(uniformOmniLightPos, light->GetPosition().x, light->GetPosition().y, light->GetPosition().z);
+	glUniform1f(uniformFarPlane, light->GetFarPlane());
+
+	omniShadowShader.SetLightMatrices(light->CalculateLightTransform());
+
+	RenderScene();
+
+	// Set frame buffer back to default
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void RenderPass(glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 {
 	shaderList[0].UseShader();
@@ -303,19 +330,24 @@ int main()
 		                         0.0f, -8.0f, -1.0f);
 
 
-	pointLights[0] = PointLight(0.0f, 0.0f, 1.0f,
+	pointLights[0] = PointLight(1024, 1024,
+		                        0.01f, 100.0f,
+		                        0.0f, 0.0f, 1.0f,
 		                        0.1f, 0.1f,
 		                       -4.0f, 2.0f, 0.0f,
 		                        0.3f, 0.2f, 0.1f);
 	pointLightCount++;
 
-	pointLights[1] = PointLight(0.0f, 1.0f, 0.0f,
+	pointLights[1] = PointLight(1024, 1024,
+		                        0.01f, 100.0f, 0.0f, 1.0f, 0.0f,
 		                        0.1f, 0.1f,
 		                        4.0f, 2.0f, 0.0f,
 		                        0.3f, 0.2f, 0.1f);
 	pointLightCount++;
 
-	spotLights[0] = SpotLight(1.0f, 1.0f, 1.0f,
+	spotLights[0] = SpotLight(1024, 1024,
+		                      0.01f, 100.0f, 
+		                      1.0f, 1.0f, 1.0f,
 		                      0.0f, 2.0f,
 		                      0.0f, 0.0f, 0.0f,
 		                      0.0f,-1.0f, 0.0f,
@@ -323,12 +355,14 @@ int main()
 		                      20.0f);
 	spotLightCount++;
 
-	spotLights[1] = SpotLight(1.0f, 1.0f, 1.0f,
+	spotLights[1] = SpotLight(1024, 1024,
+		                      0.01f, 100.0f, 
+		                      1.0f, 1.0f, 1.0f,
 		                      0.0f, 1.0f,
 		                      2.0f, 0.0f, 0.0f,
-	                       -10.0f, -1.0f, 0.0f,
+	                        -10.0f,-1.0f, 0.0f,
 		                      1.0f, 0.0f, 0.0f,
-		                     20.0f);
+		                      20.0f);
 	spotLightCount++;
 
 
@@ -351,6 +385,17 @@ int main()
 		glm::mat4 viewMatrix = camera.calculateViewMatrix();
 
 		DirectionalShadowMapPass(&mainLight);
+
+		for (size_t i = 0; i < pointLightCount; i++)
+		{
+			OmniShadowMapPass(&pointLights[i]);
+		}
+
+		for (size_t i = 0; i < spotLightCount; i++)
+		{
+			OmniShadowMapPass(&spotLights[i]);
+		}
+
 		RenderPass(projection, viewMatrix);
 
 		glUseProgram(0); //Undersigning the shader

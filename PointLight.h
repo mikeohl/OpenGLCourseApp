@@ -19,7 +19,9 @@ public:
 
 	// Could be in use light function but rather do seperately
 	std::vector<glm::mat4> CalculateLightTransform();
+	
 	GLfloat GetFarPlane();
+	glm::vec3 GetPosition();
 
 	~PointLight();
 
