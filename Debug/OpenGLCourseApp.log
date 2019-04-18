@@ -1,18 +1,2 @@
-﻿  stdafx.cpp
-  Camera.cpp
-  DirectionalLight.cpp
-  main.cpp
-c:\users\michael\documents\visual studio 2017\projects\openglcourseapp\openglcourseapp\glwindow.h(16): warning C4244: 'return': conversion from 'GLint' to 'GLfloat', possible loss of data
-c:\users\michael\documents\visual studio 2017\projects\openglcourseapp\openglcourseapp\glwindow.h(17): warning C4244: 'return': conversion from 'GLint' to 'GLfloat', possible loss of data
-c:\users\michael\documents\visual studio 2017\projects\openglcourseapp\openglcourseapp\main.cpp(32): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\michael\documents\visual studio 2017\projects\openglcourseapp\openglcourseapp\main.cpp(330): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
-c:\users\michael\documents\visual studio 2017\projects\openglcourseapp\openglcourseapp\main.cpp(375): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-  OmniShadowMap.cpp
-  PointLight.cpp
-c:\users\michael\documents\visual studio 2017\projects\openglcourseapp\openglcourseapp\pointlight.cpp(18): warning C4244: 'argument': conversion from 'GLuint' to 'GLfloat', possible loss of data
-  Shader.cpp
-  ShadowMap.cpp
-  SpotLight.cpp
-  Generating Code...
-LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+﻿  Shader.cpp
   OpenGLCourseApp.vcxproj -> C:\Users\Michael\Documents\Visual Studio 2017\Projects\OpenGLCourseApp\Debug\OpenGLCourseApp.exe

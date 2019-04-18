@@ -154,7 +154,7 @@ void CreateShaders()
 	Shader *shader1 = new Shader();
 	shader1->CreateFromFiles(vShader, fShader);
 	shaderList.push_back(*shader1);
-
+	
 	directionalShadowShader.CreateFromFiles("shaders/directional_shadow_map.vert", "shaders/directional_shadow_map.frag");
 	omniShadowShader.CreateFromFiles("shaders/omni_shadow_map.vert", "shaders/omni_shadow_map.geom", "shaders/omni_shadow_map.frag");
 }
@@ -227,7 +227,15 @@ void DirectionalShadowMapPass(DirectionalLight* light)
 	glClear(GL_DEPTH_BUFFER_BIT); // Start out with clean slate for our shadowmap
 
 	uniformModel = directionalShadowShader.GetModelLocation();
+
+	//printf("uniformModel: %i\n", uniformModel);
 	directionalShadowShader.SetDirectionalLightTransform(&light->CalculateLightTransform());
+
+	// Validate the shader programs
+	if (!directionalShadowShader.Validate())
+	{
+		printf("SHADER NOT VALIDATED: directionalShadowShader\n");
+	}
 
 	RenderScene();
 
@@ -237,21 +245,29 @@ void DirectionalShadowMapPass(DirectionalLight* light)
 
 void OmniShadowMapPass(PointLight* light)
 {
-	omniShadowShader.UseShader();
-
 	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
 
-	light->GetShadowMap()->Write();
-	glClear(GL_DEPTH_BUFFER_BIT); // Start out with clean slate for our shadowmap
+	omniShadowShader.UseShader();
 
 	uniformModel = omniShadowShader.GetModelLocation();
 	uniformOmniLightPos = omniShadowShader.GetOmniLightPosLocation();
 	uniformFarPlane = omniShadowShader.GetFarPlaneLocation();
 
+	printf("uniformModel: %i, uniformOmniLightPos: %i, uniformFarPlane: %i\n", uniformModel, uniformOmniLightPos, uniformFarPlane);
+
+	light->GetShadowMap()->Write();
+	glClear(GL_DEPTH_BUFFER_BIT); // Start out with clean slate for our shadowmap
+
 	glUniform3f(uniformOmniLightPos, light->GetPosition().x, light->GetPosition().y, light->GetPosition().z);
 	glUniform1f(uniformFarPlane, light->GetFarPlane());
 
-	omniShadowShader.SetLightMatrices(light->CalculateLightTransform());
+	omniShadowShader.SetOmniLightMatrices(light->CalculateLightTransform());
+
+	// Validate the shader program
+	if (!omniShadowShader.Validate())
+	{
+		printf("SHADER NOT VALIDATED: omniShadowShader\n");
+	}
 
 	RenderScene();
 
@@ -282,18 +298,26 @@ void RenderPass(glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 	glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
 	shaderList[0].SetDirectionalLight(&mainLight);
-	shaderList[0].SetPointLights(pointLights, pointLightCount);
-	shaderList[0].SetSpotLights(spotLights, spotLightCount);
+	shaderList[0].SetPointLights(pointLights, pointLightCount, 3, 0);
+	shaderList[0].SetSpotLights(spotLights, spotLightCount, 3 + pointLightCount, pointLightCount);
 	shaderList[0].SetDirectionalLightTransform(&mainLight.CalculateLightTransform());
 
-	// Bind the shadowmap to the next texture unit after GL_TEXTURE0
-	mainLight.GetShadowMap()->Read(GL_TEXTURE1);
-	shaderList[0].SetTexture(0);
-	shaderList[0].SetDirectionalShadowMap(1);
+	// Bind the shadowmap to the next texture unit after GL_TEXTURE1 (Not using 0 to avoid conflicts with default)
+	mainLight.GetShadowMap()->Read(GL_TEXTURE2);
+
+	// Set texture unit to 1 (Not zero to avoid any defaults set to zero of a different texture unit type like cubes)
+	shaderList[0].SetTexture(1);
+	shaderList[0].SetDirectionalShadowMap(2);
 
 	glm::vec3 lowerLight = camera.getCameraPosition();
 	lowerLight.y -= 0.3f;
-	//spotLights[0].SetFlash(lowerLight, camera.getCameraDirection());
+	spotLights[0].SetFlash(lowerLight, camera.getCameraDirection());
+
+	// Validate the shader program
+	if (!shaderList[0].Validate())
+	{
+		printf("SHADER NOT VALIDATED: shaderList[%i]\n", 0);
+	}
 
 	RenderScene();
 }
@@ -326,7 +350,7 @@ int main()
 
 	mainLight = DirectionalLight(2048, 2048, // TODO: placeholder square coordinates
 		                         1.0f, 1.0f, 1.0f, 
-		                         0.4, 0.5f,
+		                         0.1, 0.2f,
 		                         0.0f, -8.0f, -1.0f);
 
 

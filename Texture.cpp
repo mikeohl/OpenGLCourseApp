@@ -82,8 +82,8 @@ bool Texture::LoadTextureA()
 
 void Texture::UseTexture()
 {
-	// Set active texture unit to unit0 - normally the default
-	glActiveTexture(GL_TEXTURE0);
+	// Set active texture unit to unit1 - so it isn't the normal default
+	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 }
 
