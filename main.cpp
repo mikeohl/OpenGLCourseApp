@@ -253,7 +253,7 @@ void OmniShadowMapPass(PointLight* light)
 	uniformOmniLightPos = omniShadowShader.GetOmniLightPosLocation();
 	uniformFarPlane = omniShadowShader.GetFarPlaneLocation();
 
-	printf("uniformModel: %i, uniformOmniLightPos: %i, uniformFarPlane: %i\n", uniformModel, uniformOmniLightPos, uniformFarPlane);
+	//printf("uniformModel: %i, uniformOmniLightPos: %i, uniformFarPlane: %i\n", uniformModel, uniformOmniLightPos, uniformFarPlane);
 
 	light->GetShadowMap()->Write();
 	glClear(GL_DEPTH_BUFFER_BIT); // Start out with clean slate for our shadowmap
@@ -357,14 +357,14 @@ int main()
 	pointLights[0] = PointLight(1024, 1024,
 		                        0.01f, 100.0f,
 		                        0.0f, 0.0f, 1.0f,
-		                        0.1f, 0.1f,
+		                        1.0f, 1.0f,
 		                       -4.0f, 2.0f, 0.0f,
 		                        0.3f, 0.2f, 0.1f);
 	pointLightCount++;
 
 	pointLights[1] = PointLight(1024, 1024,
 		                        0.01f, 100.0f, 0.0f, 1.0f, 0.0f,
-		                        0.1f, 0.1f,
+		                        1.0f, 1.0f,
 		                        4.0f, 2.0f, 0.0f,
 		                        0.3f, 0.2f, 0.1f);
 	pointLightCount++;
@@ -407,6 +407,12 @@ int main()
 		camera.keyControl(mainWindow.getKeys(), deltaTime);
 		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 		glm::mat4 viewMatrix = camera.calculateViewMatrix();
+
+		if (mainWindow.getKeys()[GLFW_KEY_L])
+		{
+			spotLights[0].Toggle();
+			mainWindow.getKeys()[GLFW_KEY_L] = false;
+		}
 
 		DirectionalShadowMapPass(&mainLight);
 
